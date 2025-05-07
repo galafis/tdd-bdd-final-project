@@ -26,6 +26,7 @@ Attributes:
 name (string) - the name of the product
 description (string) - the description the product belongs to (i.e., dog, cat)
 available (boolean) - True for products that are available for adoption
+image_url (string) - URL of the product image
 
 """
 import logging
@@ -79,6 +80,7 @@ class Product(db.Model):
     category = db.Column(
         db.Enum(Category), nullable=False, server_default=(Category.UNKNOWN.name)
     )
+    image_url = db.Column(db.String(255), nullable=True) # Added image_url field
 
     ##################################################
     # INSTANCE METHODS
@@ -120,7 +122,8 @@ class Product(db.Model):
             "description": self.description,
             "price": str(self.price),
             "available": self.available,
-            "category": self.category.name  # convert enum to string
+            "category": self.category.name,  # convert enum to string
+            "image_url": self.image_url # Added image_url to serialization
         }
 
     def deserialize(self, data: dict):
@@ -141,10 +144,19 @@ class Product(db.Model):
                     + str(type(data["available"]))
                 )
             self.category = getattr(Category, data["category"])  # create enum from string
+            self.image_url = data.get("image_url") # Added image_url to deserialization (optional)
         except AttributeError as error:
-            raise DataValidationError("Invalid attribute: " + error.args[0]) from error
+            # Handle cases where 'image_url' might be missing if not required
+            if error.name == "image_url" and "image_url" not in data:
+                self.image_url = None
+            else:
+                raise DataValidationError("Invalid attribute: " + error.args[0]) from error
         except KeyError as error:
-            raise DataValidationError("Invalid product: missing " + error.args[0]) from error
+            # Handle cases where 'image_url' might be missing if not required
+            if error.args[0] == "image_url" and "image_url" not in data:
+                self.image_url = None
+            else:
+                raise DataValidationError("Invalid product: missing " + error.args[0]) from error
         except TypeError as error:
             raise DataValidationError(
                 "Invalid product: body of request contained bad or no data " + str(error)
@@ -217,7 +229,7 @@ class Product(db.Model):
         logger.info("Processing price query for %s ...", price)
         price_value = price
         if isinstance(price, str):
-            price_value = Decimal(price.strip(' "'))
+            price_value = Decimal(price.strip(' "')) # Corrected line: removed internal newlines and ensured single quotes for the strip argument
         return cls.query.filter(cls.price == price_value)
 
     @classmethod
@@ -238,7 +250,7 @@ class Product(db.Model):
     def find_by_category(cls, category: Category = Category.UNKNOWN) -> list:
         """Returns all Products by their Category
 
-        :param category: values are ['MALE', 'FEMALE', 'UNKNOWN']
+        :param category: values are [CLOTHS, FOOD, HOUSEWARES, AUTOMOTIVE, TOOLS, UNKNOWN]
         :type available: enum
 
         :return: a collection of Products that are available
@@ -247,3 +259,4 @@ class Product(db.Model):
         """
         logger.info("Processing category query for %s ...", category.name)
         return cls.query.filter(cls.category == category)
+

@@ -1,6 +1,6 @@
 # Projeto Final TDD / BDD: Microsserviço de Catálogo de Produtos
 
-Este repositório contém o projeto final desenvolvido para o curso **Introdução a TDD/BDD**, demonstrando a aplicação de Test Driven Development (TDD) e Behavior Driven Development (BDD) na criação de um microsserviço de backend para um catálogo de produtos de uma aplicação de eCommerce.
+Este repositório contém o projeto final desenvolvido por mim para o curso **Introdução a TDD/BDD**, demonstrando a aplicação de Test Driven Development (TDD) e Behavior Driven Development (BDD) na criação de um microsserviço de backend para um catálogo de produtos de uma aplicação de eCommerce.
 
 ## Visão Geral do Projeto
 
